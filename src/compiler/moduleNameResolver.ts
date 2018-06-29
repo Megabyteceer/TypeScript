@@ -585,11 +585,18 @@ namespace ts {
     function tryLoadModuleUsingOptionalResolutionSettings(extensions: Extensions, moduleName: string, containingDirectory: string, loader: ResolutionKindSpecificLoader,
         failedLookupLocations: Push<string>, state: ModuleResolutionState): Resolved | undefined {
 
-        if (!isExternalModuleNameRelative(moduleName)) {
-            return tryLoadModuleUsingBaseUrl(extensions, moduleName, loader, failedLookupLocations, state);
+        let ret;
+        if (!ts.isExternalModuleNameRelative(moduleName)) {
+            ret = tryLoadModuleUsingBaseUrl(extensions, moduleName, loader, failedLookupLocations, state);
         }
         else {
-            return tryLoadModuleUsingRootDirs(extensions, moduleName, containingDirectory, loader, failedLookupLocations, state);
+            ret = tryLoadModuleUsingRootDirs(extensions, moduleName, containingDirectory, loader, failedLookupLocations, state);
+        }
+        if(ret !== undefined) {
+            return ret;
+        }
+        else {
+            return loader(extensions, moduleName, failedLookupLocations, !directoryProbablyExists(containingDirectory, state.host), state);
         }
     }
 
